@@ -14,7 +14,11 @@ def parse_meminfo(text: str) -> dict:
         parts = rest.split()
         if parts and parts[0].isdigit():
             values[key] = int(parts[0]) * 1024
-    return {"total": values["MemTotal"], "available": values["MemAvailable"]}
+    if "MemTotal" not in values:
+        raise ValueError("MemTotal missing from /proc/meminfo")
+    # MemAvailable needs kernel 3.14 or newer. Older kernels fall back to MemFree.
+    available = values.get("MemAvailable", values.get("MemFree", 0))
+    return {"total": values["MemTotal"], "available": available}
 
 
 def parse_uptime(text: str) -> float:
@@ -29,7 +33,7 @@ def read_tmux_sessions() -> list:
             ["tmux", "ls", "-F", "#{session_name}"],
             capture_output=True,
             text=True,
-            timeout=5,
+            timeout=2,
             check=False,
         )
     except (FileNotFoundError, subprocess.TimeoutExpired):
