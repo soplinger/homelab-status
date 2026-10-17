@@ -29,6 +29,11 @@ class TestServerHelpers(unittest.TestCase):
         self.assertTrue(is_allowed_host("127.0.0.1:8080", 8080))
         self.assertTrue(is_allowed_host("localhost:8080", 8080))
 
+    def test_host_check_accepts_bare_local_names_on_port_80(self):
+        self.assertTrue(is_allowed_host("localhost", 80))
+        self.assertTrue(is_allowed_host("127.0.0.1", 80))
+        self.assertFalse(is_allowed_host("evil.example", 80))
+
     def test_host_check_rejects_other_hosts_and_ports(self):
         self.assertFalse(is_allowed_host("evil.example:8080", 8080))
         self.assertFalse(is_allowed_host("127.0.0.1:9999", 8080))

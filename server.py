@@ -26,7 +26,11 @@ fetch("/api/status")
 
 def is_allowed_host(host_header: str, port: int) -> bool:
     """Accept only the server's own localhost names, to block DNS rebinding."""
-    return host_header in {f"127.0.0.1:{port}", f"localhost:{port}"}
+    names = {"127.0.0.1", "localhost"}
+    allowed = {f"{name}:{port}" for name in names}
+    if port == 80:
+        allowed |= names  # browsers leave off the default port
+    return host_header in allowed
 
 
 class Handler(BaseHTTPRequestHandler):
